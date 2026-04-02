@@ -9,8 +9,30 @@ public class Lander : MonoBehaviour
     public event EventHandler OnLeftForce;
     public event EventHandler OnBeforeForce;
     public event EventHandler OnCoinPickUp;
+    public event EventHandler<OnLandedEventArgs> OnLanded;
+        
+    public class OnLandedEventArgs : EventArgs
+    {
+        public LandingType landingType;
+        public int score;
+        public float dotVector;
+        public float landingSpeed;
+        public float scoreMultiplier; 
 
-    private float fuelAmmount = 10f;
+    }
+
+    private float fuelAmmount;
+    private float fuelAmmountMax = 10f;
+
+    public static Lander Instance;
+
+    public enum LandingType
+    {
+        Success,
+        WrongLandingArea,
+        TooSteepAngle,
+        TooFastLanding,
+    }
 
 
     private Rigidbody2D landerRigidbody2D;
@@ -18,8 +40,16 @@ public class Lander : MonoBehaviour
     private void Awake()
     {
        landerRigidbody2D = GetComponent<Rigidbody2D>();
+        Instance = this;
+
+        fuelAmmount = fuelAmmountMax;
+        landerRigidbody2D = GetComponent<Rigidbody2D>();
+
+        landerRigidbody2D.gravityScale = 0f;
+
 
     }
+
 
     private void FixedUpdate()
     {
@@ -60,7 +90,16 @@ public class Lander : MonoBehaviour
     {
         if (!collision2D.gameObject.TryGetComponent(out LandingPad landingPad))
         {
-            Debug.Log("Crash on Terrain");
+            Debug.Log("Crash on Terrain!");
+            OnLanded?.Invoke(this, new OnLandedEventArgs
+            {
+                landingType = LandingType.WrongLandingArea,
+                dotVector = 0f,
+                landingSpeed = 0,
+                scoreMultiplier = 0,
+                score = 0,
+
+            });
             return;
 
         }
@@ -68,18 +107,35 @@ public class Lander : MonoBehaviour
         float relativeVelocityMagnitude = collision2D.relativeVelocity.magnitude;
         if (relativeVelocityMagnitude > softLandindVelocityMagnitude)
         {
-            Debug.Log("Crash Landing");
+            Debug.Log("Landed too hard!");
+            OnLanded?.Invoke(this, new OnLandedEventArgs
+            {
+                landingType = LandingType.TooFastLanding,
+                dotVector = 0f,
+                landingSpeed = relativeVelocityMagnitude,
+                scoreMultiplier = 0,
+                score = 0,
+
+            });
             return;
         }
 
+       
         float dotVector = Vector2.Dot(Vector2.up,transform.up);
-
         float minDotVector = .90f;
-
         if (dotVector < minDotVector)
         {
             //Land on a too steep angle 
             Debug.Log("Land on a too steep angle");
+            OnLanded?.Invoke(this, new OnLandedEventArgs
+            {
+                landingType = LandingType.TooSteepAngle,
+                dotVector = dotVector,
+                landingSpeed = relativeVelocityMagnitude,
+                scoreMultiplier = 0,
+                score = 0,
+
+            });
             return ;
         }
 
@@ -102,6 +158,16 @@ public class Lander : MonoBehaviour
 
         Debug.Log("Score: " + score);
 
+        OnLanded?.Invoke(this, new OnLandedEventArgs
+        {
+            landingType = LandingType.Success,
+            dotVector = dotVector,
+            landingSpeed = relativeVelocityMagnitude,
+            scoreMultiplier = landingPad.getScoreMultiplier(),
+            score = score,
+
+        });
+
 
     }
 
@@ -113,6 +179,10 @@ public class Lander : MonoBehaviour
         {
             float addFuelAmount = 10f;
             fuelAmmount += addFuelAmount;
+            if(fuelAmmount > fuelAmmountMax)
+            {
+                fuelAmmount = fuelAmmountMax;
+            }
             fuelPickUp.DestroySelf();
         }
 
@@ -124,10 +194,32 @@ public class Lander : MonoBehaviour
 
     }
 
+    
+
     private void ConsumeFuel()
     {
         float fuelConsumptionAmount = 1f;
         fuelAmmount -= fuelConsumptionAmount * Time.deltaTime;
+    }
+
+    public float GetFuel()
+    {
+        return fuelAmmount;
+
+    }
+
+    public float GetFuelAmmountNormalize()
+    {
+        return fuelAmmount / fuelAmmountMax;
+    }
+
+    public float GetSpeedX()
+    {
+        return landerRigidbody2D.linearVelocityX;
+    }
+    public float GetSpeedY()
+    {
+        return landerRigidbody2D.linearVelocityY;
     }
 }
 
