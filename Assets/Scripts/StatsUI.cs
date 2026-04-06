@@ -18,10 +18,10 @@ public class StatsUI : MonoBehaviour
     }
     private void UpdateStatsTextMesh()
     {
-        speedUpArrowGameObject.SetActive(Lander.Instance.GetSpeedY() >= 0);
-        speedDownArrowGameObject.SetActive(Lander.Instance.GetSpeedY() <= 0);
-        speedLeftArrowGameObject.SetActive(Lander.Instance.GetSpeedX() >= 0);
-        speedRightArrowGameObject.SetActive(Lander.Instance.GetSpeedX() <= 0);
+        speedUpArrowGameObject.SetActive(Lander.Instance.GetSpeedY() > 0);
+        speedDownArrowGameObject.SetActive(Lander.Instance.GetSpeedY() < 0);
+        speedLeftArrowGameObject.SetActive(Lander.Instance.GetSpeedX() > 0);
+        speedRightArrowGameObject.SetActive(Lander.Instance.GetSpeedX() < 0);
 
         fuelImage.fillAmount = Lander.Instance.GetFuelAmmountNormalize();
         statsTextMesh.text =

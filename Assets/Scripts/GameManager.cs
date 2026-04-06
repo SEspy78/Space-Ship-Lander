@@ -3,11 +3,11 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
 
-    [SerializeField] private Lander lander;
 
     public static GameManager Instance { get; private set; }
     private int score;
     private float time;
+    private bool isTimerActive;
 
     private void Awake()
     {
@@ -15,7 +15,19 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
-        lander.OnCoinPickUp += Lander_OnCoinPickUp;
+        Lander.Instance.OnCoinPickUp += Lander_OnCoinPickUp;
+        Lander.Instance.OnLanded += Lander_OnLanded;
+        Lander.Instance.OnStateChanged += Lander_OnStateChanged;
+    }
+
+    private void Lander_OnStateChanged(object sender, Lander.OnStateChangedEventArgs e)
+    {
+        isTimerActive = e.state == Lander.State.Normal ;
+    }
+
+    private void Lander_OnLanded(object sender, Lander.OnLandedEventArgs e)
+    {
+        addScore(e.score);
     }
 
     private void Lander_OnCoinPickUp(object sender, System.EventArgs e)
@@ -26,7 +38,10 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        time += Time.deltaTime; 
+        if (isTimerActive)
+        {
+            time += Time.deltaTime;
+        }
     }
 
     public void addScore(int addScoreAmount)
