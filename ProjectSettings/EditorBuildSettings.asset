@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/GameOverScene.unity
     guid: 4a1e17d034abe6349acafa0e0c285f55
   - enabled: 1
-    path: Assets/Scenes/lol.unity
+    path: Assets/Scenes/GameScene.unity
     guid: c248db5840517d0468e74a0053c0ed30
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
